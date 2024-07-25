@@ -7,12 +7,6 @@ This script generates Pascal's Triangle.
 def pascal_triangle(n):
     """
     Generate Pascal's Triangle up to the n-th row.
-
-    Args:
-        n (int): The number of rows of Pascal's Triangle to generate.
-
-    Returns:
-        list of list of int: Pascal's Triangle up to the n-th row.
     """
     if n <= 0:
         return []
