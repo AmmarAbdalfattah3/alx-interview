@@ -1,9 +1,9 @@
 def pascal_triangle(n):
     """Generate Pascal's Triangle up to the n-th row.
-    
+
     Args:
         n (int): The number of rows in the Pascal's Triangle.
-        
+
     Returns:
         list of lists: A list of lists representing the Pascal's Triangle.
     """
@@ -20,6 +20,7 @@ def pascal_triangle(n):
         triangle.append(row)
 
     return triangle
+
 
 # Test the function
 if __name__ == "__main__":
