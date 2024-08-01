@@ -1,47 +1,47 @@
 #!/usr/bin/env python3
 """
-This module writes a type-annotated function add that takes a float a and
-a float b as arguments and returns their sum as a float.
+This script writes a method that determines if all the boxes can be opened.
 """
+
+
+from collections import deque
 
 
 def canUnlockAll(boxes):
     """
-    Determines if all boxes can be unlocked given a list of boxes.
+    Determine if all boxes can be unlocked starting from the first box.
 
-    Args:
-        boxes (List[List[int]]): A list where each sublist represents a box.
+    Parameters:
+    boxes (list of lists): A list where each sublist represents a box.
 
     Returns:
-        bool: True if all boxes can be unlocked, False otherwise.
-    """
+    bool: True if all boxes can be unlocked, otherwise False.
 
+    Example:
+    >>> canUnlockAll([[1], [2], [3], [4], []])
+    True
+
+    >>> canUnlockAll([[1, 4, 6], [2], [0, 4, 1], [5, 6, 2], [3], [4, 1], [6]])
+    True
+
+    >>> canUnlockAll([[1, 4], [2], [0, 4, 1], [3], [], [4, 1], [5, 6]])
+    False
+    """
     # Number of boxes
     n = len(boxes)
 
-    # To keep track of unlocked boxes
-    unlocked = set()
-    # To keep track of boxes to explore
-    to_explore = [0]
+    # Initialize a queue for BFS and a set to track visited boxes
+    queue = deque([0])
+    visited = set([0])
 
-    while to_explore:
-        # Get the next box to explore
-        current_box = to_explore.pop()
+    while queue:
+        current_box = queue.popleft()
 
-        # If this box is already unlocked, skip it
-        if current_box in unlocked:
-            continue
+        # Access keys in the current box
+        for key in boxes[current_box]:
+            if key < n and key not in visited:
+                visited.add(key)
+                queue.append(key)
 
-        # Mark the current box as unlocked
-        unlocked.add(current_box)
-
-        # Get the list of keys from the current box
-        keys = boxes[current_box]
-
-        # Add new boxes to explore if they haven't been unlocked yet
-        for key in keys:
-            if key < n and key not in unlocked:
-                to_explore.append(key)
-
-    # Check if all boxes are unlocked
-    return len(unlocked) == n
+    # Check if we visited all boxes
+    return len(visited) == n
