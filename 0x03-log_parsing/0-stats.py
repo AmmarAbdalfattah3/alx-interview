@@ -5,52 +5,54 @@ This module reads stdin line by line and computes metrics
 
 
 import sys
-import re
 from collections import defaultdict
 
 
-# Regular expression pattern to match log lines
-LOG_PATTERN = re.compile(
-    r' ^ (\d{1, 3}\.\d{1, 3}\.\d{1, 3}\.\d{1, 3})
-    - \[(.*?)\] "GET /projects/260 HTTP/1.1" (\d{3})(\d+)$'
-)
-
-# Status codes to track
-status_codes = {200, 301, 400, 401, 403, 404, 405, 500}
-
-# Variables to hold metrics
-file_size_total = 0
-status_counts = defaultdict(int)
-line_count = 0
+def print_metrics(file_size_sum, status_counts):
+    """Print metrics: total file size and status code counts."""
+    print(f"File size: {file_size_sum}")
+    for status_code in sorted(status_counts.keys()):
+        print(f"{status_code}: {status_counts[status_code]}")
 
 
-def print_metrics():
-    # Print the accumulated metrics
-    print(f'File size: {file_size_total}')
-    for status_code in sorted(status_codes):
-        if status_counts[status_code] > 0:
-            print(f'{status_code}: {status_counts[status_code]}')
+def main():
+    """Main function to process log lines and compute metrics."""
+    file_size_sum = 0
+    status_counts = defaultdict(int)
+    line_count = 0
+
+    try:
+        for line in sys.stdin:
+            line = line.strip()
+            if not line:
+                continue
+
+            parts = line.split()
+            if len(parts) != 7:
+                continue
+
+            ip_address, dash, date_bracket, method, status_code, file_size = (
+                parts[0], parts[1], parts[2], parts[3], parts[4], parts[5]
+            )
+
+            # Ensure it matches the expected format
+            if (ip_address and dash == '-' and date_bracket.startswith('[') and
+                    method.startswith('"GET') and status_code.isdigit() and
+                    file_size.isdigit()):
+                status_code = int(status_code)
+                file_size = int(file_size)
+
+                if status_code in {200, 301, 400, 401, 403, 404, 405, 500}:
+                    status_counts[status_code] += 1
+                    file_size_sum += file_size
+                    line_count += 1
+
+                if line_count % 10 == 0:
+                    print_metrics(file_size_sum, status_counts)
+
+    except KeyboardInterrupt:
+        print_metrics(file_size_sum, status_counts)
 
 
-try:
-    for line in sys.stdin:
-        match = log_pattern.match(line)
-        if match:
-            # Extract file size and status code
-            status_code = int(match.group(3))
-            file_size = int(match.group(4))
-
-            # Update metrics
-            file_size_total += file_size
-            if status_code in status_codes:
-                status_counts[status_code] += 1
-
-            line_count += 1
-
-            # Print metrics every 10 lines
-            if line_count % 10 == 0:
-                print_metrics()
-
-except KeyboardInterrupt:
-    # Print metrics on keyboard interruption
-    print_metrics()
+if __name__ == "__main__":
+    main()
