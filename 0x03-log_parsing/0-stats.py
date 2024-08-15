@@ -5,56 +5,63 @@ This module reads stdin line by line and computes metrics
 
 
 import sys
-from collections import defaultdict
 
 
-def print_metrics(file_size_sum, status_counts):
-    """Print the total file size and counts of status codes."""
-    print(f"File size: {file_size_sum}")
-    for status_code in sorted(status_counts):
-        print(f"{status_code}: {status_counts[status_code]}")
+def print_stats(total_size, status_counts):
+    """
+    Prints the statistics of the log.
+    :param total_size: The total file size accumulated.
+    :param status_counts: A dictionary with status codes as keys.
+    """
+    print("File size: {}".format(total_size))
+    for code in sorted(status_counts.keys()):
+        if status_counts[code] > 0:
+            print("{}: {}".format(code, status_counts[code]))
 
 
-def main():
-    """Process log lines from stdin and compute statistics."""
-    file_size_sum = 0
-    status_counts = defaultdict(int)
+def log_parser():
+    """
+    Parses the log lines from stdin and computes the required metrics.
+    """
+    total_size = 0
+    status_counts = {
+            200: 0, 301: 0, 400: 0,
+            401: 0, 403: 0, 404: 0,
+            405: 0, 500: 0}
     line_count = 0
 
     try:
         for line in sys.stdin:
-            line = line.strip()
-            if not line:
-                continue
-
             parts = line.split()
-            if len(parts) != 7:
+            if len(parts) < 9:
                 continue
 
-            ip_address, dash, date_bracket, method, status_code, file_size = (
-                parts[0], parts[1], parts[2], parts[3], parts[4], parts[5]
-            )
+            # Extract file size
+            try:
+                file_size = int(parts[-1])
+                total_size += file_size
+            except ValueError:
+                continue
 
-            if (dash == '-' and date_bracket.startswith('[') and
-                    method.startswith('"GET') and status_code.isdigit() and
-                    file_size.isdigit()):
-                try:
-                    status_code = int(status_code)
-                    file_size = int(file_size)
-                except ValueError:
-                    continue
-
-                if status_code in {200, 301, 400, 401, 403, 404, 405, 500}:
+            # Extract status code
+            try:
+                status_code = int(parts[-2])
+                if status_code in status_counts:
                     status_counts[status_code] += 1
-                    file_size_sum += file_size
-                    line_count += 1
+            except ValueError:
+                continue
 
-                if line_count % 10 == 0:
-                    print_metrics(file_size_sum, status_counts)
+            line_count += 1
+
+            if line_count % 10 == 0:
+                print_stats(total_size, status_counts)
 
     except KeyboardInterrupt:
-        print_metrics(file_size_sum, status_counts)
+        print_stats(total_size, status_counts)
+        raise
+
+    print_stats(total_size, status_counts)
 
 
 if __name__ == "__main__":
-    main()
+    log_parser()
