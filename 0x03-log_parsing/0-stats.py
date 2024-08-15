@@ -9,14 +9,14 @@ from collections import defaultdict
 
 
 def print_metrics(file_size_sum, status_counts):
-    """Print metrics: total file size and status code counts."""
+    """Print the total file size and counts of status codes."""
     print(f"File size: {file_size_sum}")
-    for status_code in sorted(status_counts.keys()):
+    for status_code in sorted(status_counts):
         print(f"{status_code}: {status_counts[status_code]}")
 
 
 def main():
-    """Main function to process log lines and compute metrics."""
+    """Process log lines from stdin and compute statistics."""
     file_size_sum = 0
     status_counts = defaultdict(int)
     line_count = 0
@@ -35,12 +35,14 @@ def main():
                 parts[0], parts[1], parts[2], parts[3], parts[4], parts[5]
             )
 
-            # Ensure it matches the expected format
-            if (ip_address and dash == '-' and date_bracket.startswith('[') and
+            if (dash == '-' and date_bracket.startswith('[') and
                     method.startswith('"GET') and status_code.isdigit() and
                     file_size.isdigit()):
-                status_code = int(status_code)
-                file_size = int(file_size)
+                try:
+                    status_code = int(status_code)
+                    file_size = int(file_size)
+                except ValueError:
+                    continue
 
                 if status_code in {200, 301, 400, 401, 403, 404, 405, 500}:
                     status_counts[status_code] += 1
