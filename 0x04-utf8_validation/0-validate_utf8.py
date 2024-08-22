@@ -15,10 +15,10 @@ def validUTF8(data):
 
     # Masks for identifying the types of bytes
     first_byte_masks = [
-            0b11111111, 0b11111110,
-            0b11111100, 0b11111000,
-            0b11110000
-            ]
+        0b11111111, 0b11111110,
+        0b11111100, 0b11111000,
+        0b11110000
+    ]
     continuation_mask = 0b11000000
     continuation_check = 0b10000000
 
