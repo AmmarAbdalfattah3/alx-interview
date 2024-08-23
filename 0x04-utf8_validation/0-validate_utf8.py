@@ -1,46 +1,62 @@
 #!/usr/bin/python3
-"""This module determines if a given data
-set represents a valid UTF-8 encoding.
+"""
+Module to validate UTF-8 encoding in a list of integers.
 """
 
 
 def validUTF8(data):
     """
-    Determine if a given data set represents a valid UTF-8 encoding.
+    Check if a list of integers represents a valid UTF-8 encoding.
 
-    :param data: List of integers representing bytes of data
-    :return: True if data is a valid UTF-8 encoding, else False
+    Args:
+        data (list of int): A list of integers representing bytes.
+
+    Returns:
+        bool: True if the list represents a valid
+        UTF-8 encoding, False otherwise.
     """
-    num_bytes = 0  # Number of continuation bytes expected
 
-    # Masks for identifying the types of bytes
-    first_byte_masks = [
-        0b11111111, 0b11111110,
-        0b11111100, 0b11111000,
-        0b11110000
-    ]
-    continuation_mask = 0b11000000
-    continuation_check = 0b10000000
+    def count_leading_ones(byte):
+        """
+        Count the number of leading 1s in the byte to
+        determine the expected number
+        of bytes for this character.
 
-    for byte in data:
-        # Mask the byte to get only the least significant 8 bits
-        byte = byte & 0xFF
+        Args:
+            byte (int): The byte to check.
 
-        if num_bytes == 0:
-            # Determine how many bytes in the UTF-8 character
-            for i, mask in enumerate(first_byte_masks):
-                if (byte & mask) == (mask ^ (1 << (7 - i))):
-                    num_bytes = i
-                    break
-            else:
-                # If no match, it's a 1-byte character
-                if (byte & continuation_check) != 0:
-                    return False
-        else:
-            # This must be a continuation byte
-            if (byte & continuation_mask) != continuation_check:
+        Returns:
+            int: The number of leading 1s minus 1,
+            or -1 if the byte is invalid.
+        """
+        if byte >> 7 == 0:
+            return 0
+        elif byte >> 5 == 0b110:
+            return 1
+        elif byte >> 4 == 0b1110:
+            return 2
+        elif byte >> 3 == 0b11110:
+            return 3
+        return -1  # Invalid starting byte
+
+    n = len(data)
+    i = 0
+    while i < n:
+        # Check for invalid byte values
+        if data[i] < 0 or data[i] > 255:
+            return False
+
+        # Count how many bytes should follow this one
+        num_bytes = count_leading_ones(data[i])
+        if num_bytes == -1:
+            return False
+
+        # Check if the following bytes are valid continuation bytes
+        for j in range(1, num_bytes + 1):
+            if i + j >= n or (data[i + j] >> 6 != 0b10):
                 return False
-            num_bytes -= 1
 
-    # Ensure we've processed all bytes correctly
-    return num_bytes == 0
+        # Move to the next character
+        i += num_bytes + 1
+
+    return True
