@@ -9,23 +9,28 @@ def validUTF8(data):
     Check if a list of integers represents a valid UTF-8 encoding.
 
     Args:
-        data (list of int): A list of integers, each representing a byte.
+        data (list of int): A list of integers,
+        each representing a byte.
 
     Returns:
-        bool: True if the list represents a valid UTF-8 encoding, False otherwise.
+        bool: True if the list represents a valid UTF-8
+        encoding, False otherwise.
     """
 
     def count_leading_ones(byte):
         """
-        Count the number of leading 1 bits in the byte to determine the expected number
+        Count the number of leading 1 bits in the byte to
+        determine the expected number
         of bytes for this UTF-8 character.
 
         Args:
             byte (int): The byte to check.
 
         Returns:
-            int: The number of leading 1s minus 1, indicating the number of bytes
-                  in the UTF-8 character, or -1 if the byte is not a valid starting byte.
+            int: The number of leading 1s minus 1, indicating
+            the number of bytes
+                  in the UTF-8 character, or -1 if the byte
+                  is not a valid starting byte.
         """
         if byte >> 7 == 0:
             return 0
