@@ -1,55 +1,38 @@
 #!/usr/bin/node
+
 const request = require('request');
 
-// Check if a movie ID was provided
-if (process.argv.length !== 3) {
-  console.log('Usage: ./0-starwars_characters.js <movie_id>');
-  process.exit(1);
-}
-
 const movieId = process.argv[2];
+const apiUrl = `https://swapi-api.alx-tools.com/api/films/${movieId}`;
 
-// Define the URL for the Star Wars API
-const url = `https://swapi.dev/api/films/${movieId}/`;
-
-// Make a request to the Star Wars API
-request(url, (error, response, body) => {
+// Send a GET request to fetch the movie details
+request(apiUrl, (error, response, body) => {
   if (error) {
-    console.error('Error:', error);
-    return;
+    console.error(error);
+  } else {
+    const filmData = JSON.parse(body);
+    const characters = filmData.characters;
+    printCharactersInOrder(characters);
   }
+});
 
-  if (response.statusCode !== 200) {
-    console.error('Failed to fetch data. Status code:', response.statusCode);
-    return;
-  }
-
-  try {
-    const film = JSON.parse(body);
-    const characterUrls = film.characters;
-
-    // Fetch character names
-    characterUrls.forEach((characterUrl) => {
+// Function to print characters in the correct order
+function printCharactersInOrder(characters) {
+  const promises = characters.map((characterUrl) => {
+    return new Promise((resolve, reject) => {
       request(characterUrl, (error, response, body) => {
         if (error) {
-          console.error('Error:', error);
-          return;
-        }
-
-        if (response.statusCode !== 200) {
-          console.error('Failed to fetch data. Status code:', response.statusCode);
-          return;
-        }
-
-        try {
-          const character = JSON.parse(body);
-          console.log(character.name);
-        } catch (e) {
-          console.error('Failed to parse character data:', e);
+          reject(error);
+        } else {
+          const characterData = JSON.parse(body);
+          resolve(characterData.name);
         }
       });
     });
-  } catch (e) {
-    console.error('Failed to parse film data:', e);
-  }
-});
+  });
+
+  // Wait for all requests to finish and print names in order
+  Promise.all(promises).then((names) => {
+    names.forEach((name) => console.log(name));
+  });
+}
