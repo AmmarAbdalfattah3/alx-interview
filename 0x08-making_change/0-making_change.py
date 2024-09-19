@@ -1,7 +1,10 @@
 #!/usr/bin/python3
 """
-Solution for the "Change comes from within" project.
+Optimized solution for the "Change comes from within" project using BFS.
 """
+
+
+from collections import deque
 
 
 def makeChange(coins, total):
@@ -19,14 +22,22 @@ def makeChange(coins, total):
     if total <= 0:
         return 0
 
-    dp = [float('inf')] * (total + 1)
-    dp[0] = 0
+    queue = deque([(0, 0)])
+    visited = set([0])
 
-    for coin in coins:
-        for i in range(coin, total + 1):
-            dp[i] = min(dp[i], dp[i - coin] + 1)
+    while queue:
+        current_sum, num_coins = queue.popleft()
 
-    return dp[total] if dp[total] != float('inf') else -1
+        for coin in coins:
+            new_sum = current_sum + coin
+
+            if new_sum == total:
+                return num_coins + 1
+            if new_sum < total and new_sum not in visited:
+                queue.append((new_sum, num_coins + 1))
+                visited.add(new_sum)
+
+    return -1
 
 
 if __name__ == '__main__':
