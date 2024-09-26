@@ -7,10 +7,10 @@ Island Perimeter Module
 def island_perimeter(grid):
     """
     Returns the perimeter of the island described in grid.
-    
+
     Args:
         grid (list of list of int): The grid representing the island.
-    
+
     Returns:
         int: The perimeter of the island.
     """
