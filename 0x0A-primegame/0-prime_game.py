@@ -3,15 +3,17 @@
 
 
 def sieve_of_eratosthenes(n):
-    """Generate a list of primes up to n using the Sieve of Eratosthenes"""
+    """Generate a list of primes up to
+       n using the Sieve of Eratosthenes
+    """
     primes = [True] * (n + 1)
     p = 2
     while p * p <= n:
-        if primes[p]:  # Changed this line
+        if primes[p]:
             for i in range(p * p, n + 1, p):
                 primes[i] = False
         p += 1
-    
+
     prime_numbers = []
     for p in range(2, n + 1):
         if primes[p]:
@@ -20,14 +22,15 @@ def sieve_of_eratosthenes(n):
 
 
 def count_prime_moves(n, primes):
-    """Count the number of valid moves in a game with n numbers"""
-    numbers = [True] * (n + 1)  # Represents available numbers
+    """Count the number of valid moves
+       in a game with n numbers
+    """
+    numbers = [True] * (n + 1)
     moves = 0
     for prime in primes:
         if prime > n:
             break
         if numbers[prime]:
-            # Make a move by removing prime and its multiples
             for multiple in range(prime, n + 1, prime):
                 numbers[multiple] = False
             moves += 1
@@ -58,4 +61,3 @@ def isWinner(x, nums):
         return "Ben"
     else:
         return None
-
